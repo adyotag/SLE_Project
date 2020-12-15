@@ -54,31 +54,27 @@ X2_test = poly(X_test, 2)
 X3_test = poly(X_test, 3)
 
 
+X_trains = [X_train, X2_train, X3_train]
+X_valids = [X_valid, X2_valid, X3_valid]
+X_tests = [X_test, X2_test, X3_test]
+
+
+
 ## Linear Regression
 print('Training Linear Regression models...\n')
-
-print('Degree = 1')
-DEG1 = LinearRegressionFit(X_train, y_ohk_train )
-print('Train = {}'.format(LinearRegressionEval(X_train, y_ohk_train, DEG1[0]) ))
-print('Validation = {}, Test = {}'.format(LinearRegressionEval(X_valid, y_ohk_valid, DEG1[0]), LinearRegressionEval(X_test, y_ohk_test, DEG1[0]) ))
-
-print('Degree = 2')
-DEG2 = LinearRegressionFit(X2_train, y_ohk_train )
-print('Train = {}'.format(LinearRegressionEval(X2_train, y_ohk_train, DEG2[0]) ))
-print('Validation = {}, Test = {}'.format(LinearRegressionEval(X2_valid, y_ohk_valid, DEG2[0]), LinearRegressionEval(X2_test, y_ohk_test, DEG2[0]) ))
-
-print('Degree = 3')
-DEG3 = LinearRegressionFit(X3_train, y_ohk_train )
-print('Train = {}'.format(LinearRegressionEval(X3_train, y_ohk_train, DEG3[0]) ))
-print('Validation = {}, Test = {}'.format(LinearRegressionEval(X3_valid, y_ohk_valid, DEG3[0]), LinearRegressionEval(X3_test, y_ohk_test, DEG3[0]) ))
-
-
-# plot loss
 plt.figure()
 
-plt.plot(DEG1[1], label='Degree 1')
-plt.plot(DEG2[1], label='Degree 2')
-plt.plot(DEG3[1], label='Degree 3')
+for i in range(3):
+	DEGREE = i+1
+	print('Degree = {}'.format(DEGREE))
+	DEG = LinearRegressionFit(X_trains[i], y_ohk_train )
+	print('Train = {}'.format(LinearRegressionEval(X_trains[i], y_ohk_train, DEG[0]) ))
+	print('Validation = {}, Test = {}'.format(LinearRegressionEval(X_valids[i], y_ohk_valid, DEG[0]), LinearRegressionEval(X_tests[i], y_ohk_test, DEG[0]) ))
+
+	# plot loss
+	plt.plot(DEG[1], label='Degree {}'.format(DEGREE))
+
+	tc.cuda.empty_cache()
 
 plt.title("Loss of Linear Regression Models over Epochs")
 plt.xlabel("Epochs")
@@ -89,31 +85,20 @@ plt.savefig("LRLoss.png")
 
 ## Logistic Regression
 print('\n\nTraining Logistic Regression models...\n')
-
-print('Degree = 1')
-DEG1 = LogisticRegressionFit(X_train, y_cat_train, NUM_CATS)
-print('Train = {}'.format(LogisticRegressionEval(X_train, y_cat_train, DEG1[0]) ))
-print('Validation = {}, Test = {}'.format(LogisticRegressionEval(X_valid, y_cat_valid, DEG1[0]),
-						 LogisticRegressionEval(X_test, y_cat_test, DEG1[0]) ))
-
-print('Degree = 2')
-DEG2 = LogisticRegressionFit(X2_train, y_cat_train, NUM_CATS)
-print('Train = {}'.format(LogisticRegressionEval(X2_train, y_cat_train, DEG2[0]) ))
-print('Validation = {}, Test = {}'.format(LogisticRegressionEval(X2_valid, y_cat_valid, DEG2[0]),
-						 LogisticRegressionEval(X2_test, y_cat_test, DEG2[0]) ))
-
-print('Degree = 3')
-DEG3 = LogisticRegressionFit(X3_train, y_cat_train, NUM_CATS)
-print('Train = {}'.format(LogisticRegressionEval(X3_train, y_cat_train, DEG3[0]) ))
-print('Validation = {}, Test = {}'.format(LogisticRegressionEval(X3_valid, y_cat_valid, DEG3[0]),
-						 LogisticRegressionEval(X3_test, y_cat_test, DEG3[0]) ))
-
-# plot loss
 plt.figure()
 
-plt.plot(DEG1[1], label='Degree 1')
-plt.plot(DEG2[1], label='Degree 2')
-plt.plot(DEG3[1], label='Degree 3')
+for i in range(3):
+	DEGREE = i+1
+	print('Degree = {}'.format(DEGREE))
+	DEG = LogisticRegressionFit(X_trains[i], y_cat_train, NUM_CATS )
+	print('Train = {}'.format(LogisticRegressionEval(X_trains[i], y_cat_train, DEG[0]) ))
+	print('Validation = {}, Test = {}'.format(LogisticRegressionEval(X_valids[i], y_cat_valid, DEG[0]), LogisticRegressionEval(X_tests[i], y_cat_test, DEG[0]) ))
+
+	# plot loss
+	plt.plot(DEG[1], label='Degree {}'.format(DEGREE))
+
+	tc.cuda.empty_cache()
+
 
 plt.title("Loss of Logistic Regression Models over Epochs")
 plt.xlabel("Epochs")
