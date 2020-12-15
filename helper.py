@@ -1,10 +1,13 @@
+from skimage import io
+from skimage.transform import resize
+import numpy as np	
+import glob, os, re
 from tqdm import tqdm
 import torch as tc
 
 
 GPU = "cuda:0" 
 CPU = "cpu"
-
 
 def ExploreDataset(savebackup = False):
 	# load data
@@ -55,7 +58,7 @@ def ExploreDataset(savebackup = False):
 	# Load images
 	BACKUP = '/data2/adyotagupta/school/'
 	RESIZE = (100,100,3)
-	images = np.zeros((len(paths), np.mul(RESIZE)))
+	images = np.zeros((len(paths), np.prod(RESIZE)))
 	print('Importing images...')
 	for i, p in enumerate(tqdm(paths)):
 		img = io.imread(p)		# import image
@@ -67,8 +70,9 @@ def ExploreDataset(savebackup = False):
 		print('Saving Backup...')
 		np.save(BACKUP+'X_30000.npy', images)
 		np.save(BACKUP+'Y_ohk.npy', onehotkey)
+		np.save(BACKUP+'Y_cat.npy', categorical)
 
-	return [paths, onehotkey, FRUIT_SET, labels]
+	return [paths, onehotkey, categorical, FRUIT_SET, labels]
 
 
 
@@ -82,11 +86,7 @@ def poly(X, degree=1):
 
 def LinearRegressionFit(X, y, epochs=1000):
 	X_GPU, y_GPU = X.to(GPU), y.to(GPU)
-	INPUT = X.shape[1]
-	try:  # one hot encoding
-		OUTPUT = len(y[0])
-	except TypeError: # categorical
-		OUTPUT = 1
+	INPUT, OUTPUT = X.shape[1], len(y[0])
  
 	model = tc.nn.Linear(INPUT, OUTPUT).to(GPU)
 	loss_func = tc.nn.MSELoss()
@@ -112,21 +112,73 @@ def LinearRegressionFit(X, y, epochs=1000):
 
 def LinearRegressionEval(X, y, model):
 	model_GPU, X_GPU, y_GPU = model.to(GPU), X.to(GPU), y.to(GPU)
-	SAMPLES = len(y)
+	SAMPLES, OUTPUT = len(y), len(y[0])
 	y_hat = model_GPU(X_GPU)
 
-	try:
-		OUTPUT = len(y[0])
-		g_hat = tc.zeros(SAMPLES, OUTPUT).byte().to(GPU)
-		for i in range(SAMPLES):
-			g_hat[i,tc.argmax(y_hat[i])] = 1
-	except TypeError:
-		OUTPUT = 1 
-		g_hat = y_hat.byte() 
+	g_hat = tc.zeros(SAMPLES, OUTPUT).byte().to(GPU)
+	for i in range(SAMPLES):
+		g_hat[i,tc.argmax(y_hat[i])] = 1
 
 	correct = 0
 	for i in range(SAMPLES):
 		if (g_hat[i] == y_GPU[i].byte()).all():
 			correct += 1.
 
+	tc.cuda.empty_cache()
 	return correct/SAMPLES
+
+
+
+def LogisticRegressionFit(X, y, NUM_CATS, epochs=1000 ):
+	X_GPU, y_GPU = X.to(GPU), y.to(GPU)
+	INPUT, OUTPUT = X.shape[1], NUM_CATS
+ 
+	layers = [tc.nn.Linear(INPUT, OUTPUT), tc.nn.Sigmoid()]
+	model = tc.nn.Sequential(*layers).to(GPU)
+
+
+	loss_func = tc.nn.CrossEntropyLoss()
+	opt = tc.optim.SGD(model.parameters(), lr=.1)	
+
+	loss_counter = []
+
+	pbar_epoch = tqdm(range(epochs))
+	for epoch in pbar_epoch:
+		y_hat = model(X_GPU.requires_grad_())
+		loss = loss_func(y_hat, y_GPU.long())
+		loss.backward()
+		opt.step()
+		opt.zero_grad()
+		loss_counter.append(loss.item())
+		pbar_epoch.set_description( "Loss: {}".format(loss.item()) )
+
+	returned_value = [model.to(CPU), loss_counter]
+	tc.cuda.empty_cache()
+	return returned_value
+
+
+def LogisticRegressionEval(X, y, model):
+	model_GPU, X_GPU, y_GPU = model.to(GPU), X.to(GPU), y.to(GPU)
+	SAMPLES = len(y)
+	y_hat = model_GPU(X_GPU)
+
+	g_hat = tc.zeros(SAMPLES).byte().to(GPU)
+	for i in range(SAMPLES):
+		g_hat[i] = tc.argmax(y_hat[i])
+
+
+	correct = 0
+	for i in range(SAMPLES):
+		if g_hat[i] == y_GPU[i].byte():
+			correct += 1.
+
+	tc.cuda.empty_cache()
+	return correct/SAMPLES
+
+
+
+
+
+
+
+
