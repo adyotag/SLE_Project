@@ -1,6 +1,6 @@
 from helper import poly, LinearRegressionFit, LinearRegressionEval
 from helper import LogisticRegressionFit, LogisticRegressionEval
-from helper import ExploreDataset
+from helper import ExploreDataset, PlotANN
 from matplotlib import pyplot as plt
 import numpy as np
 import torch as tc
@@ -143,9 +143,11 @@ model1.compile(loss=keras.losses.categorical_crossentropy,
 
 history1 = model1.fit(X_train, y_ohk_train,
           	batch_size=256,
-	        epochs=250,
+	        epochs=150,
         	verbose=1,
 	        validation_data=(X_valid, y_ohk_valid),)
+
+PlotANN(history1.history, 1)
 
 f = open('/data2/adyotagupta/school/history1.pkl','wb')
 pickle.dump(history1.history, f)
@@ -156,9 +158,12 @@ print('Test Accuracy = {}'.format(model1.evaluate(X_test, y_ohk_test)))
 print('Saving model...\n')
 model1.save('/data2/adyotagupta/school/model1.mod')
 
+#Saving figures for Model 1...
+#Epoch 150/150
+#139/139 [==============================] - 8s 57ms/step - loss: 0.1472 - accuracy: 0.9604 - val_loss: 0.3086 - val_accuracy: 0.9005
+#139/139 [==============================] - 1s 7ms/step - loss: 0.2904 - accuracy: 0.9048
+#Test Accuracy = [0.29041942954063416, 0.904751181602478]
 
-#Epoch 250/250
-#139/139 [==============================] - 8s 54ms/step - loss: 0.0432 - accuracy: 0.9951 - val_loss: 0.2115 - val_accuracy: 0.9354
 
 
 # Model 2
@@ -180,10 +185,12 @@ model2.compile(loss=keras.losses.categorical_crossentropy,
 
 history2 = model2.fit(X_train, y_ohk_train,
           	batch_size=256,
-	        epochs=250,
+	        epochs=150,
         	verbose=1,
 	        validation_data=(X_valid, y_ohk_valid),)
 
+
+PlotANN(history2.history, 2)
 
 f = open('/data2/adyotagupta/school/history2.pkl','wb')
 pickle.dump(history2.history, f)
@@ -195,6 +202,11 @@ print('Saving model...\n')
 model2.save('/data2/adyotagupta/school/model2.mod')
 
 
+#Saving figures for Model 2...
+#Epoch 150/150
+#139/139 [==============================] - 8s 56ms/step - loss: 0.5186 - accuracy: 0.8279 - val_loss: 0.7289 - val_accuracy: 0.7447
+#139/139 [==============================] - 1s 4ms/step - loss: 0.7128 - accuracy: 0.7465
+#Test Accuracy = [0.7128385305404663, 0.7464535236358643]
 
 
 
