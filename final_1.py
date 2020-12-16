@@ -1,12 +1,14 @@
-from helper import ExploreDataset
 from helper import poly, LinearRegressionFit, LinearRegressionEval
 from helper import LogisticRegressionFit, LogisticRegressionEval
+from helper import ExploreDataset
 from matplotlib import pyplot as plt
 import numpy as np
-from tqdm import tqdm
-import sys
 import torch as tc
-
+import keras
+from keras.models import Sequential
+from keras.layers import Dense, Conv2D, Flatten, MaxPooling2D, Dropout
+import pickle
+import sys
 
 GPU = "cuda:0" 
 CPU = "cpu"
@@ -59,7 +61,7 @@ X_valids = [X_valid, X2_valid, X3_valid]
 X_tests = [X_test, X2_test, X3_test]
 
 
-
+"""
 ## Linear Regression
 print('Training Linear Regression models...\n')
 plt.figure()
@@ -105,3 +107,94 @@ plt.xlabel("Epochs")
 plt.ylabel("Cross Entropy Loss")
 plt.legend()
 plt.savefig("LogRLoss.png")
+"""
+
+
+## Artificial Neural Network
+
+INPUT_SHAPE_T = tuple([len(X_train),100,100,3])
+INPUT_SHAPE_V = tuple([len(X_valid),100,100,3])
+INPUT_SHAPE_TEST = tuple([len(X_test),100,100,3])
+
+X_train = X_train.cpu().detach().numpy().reshape(INPUT_SHAPE_T)
+y_ohk_train = y_ohk_train.cpu().detach().numpy()
+X_valid = X_valid.cpu().detach().numpy().reshape(INPUT_SHAPE_V) 
+y_ohk_valid = y_ohk_valid.cpu().detach().numpy()
+X_test = X_test.cpu().detach().numpy().reshape(INPUT_SHAPE_TEST)
+y_ohk_test = y_ohk_test.cpu().detach().numpy()
+
+print('Training Artificial NN models...\n')
+
+# model 1
+print('Model 1...\n')
+model1 = Sequential()
+layers = [Conv2D(16, 32, activation='sigmoid', input_shape=(100,100,3) ),
+	  Conv2D(8, 16, activation='sigmoid' ),
+	  Conv2D(4, 8, activation='sigmoid' ),
+	  Flatten(),
+	  Dense(1000, activation='relu'),
+	  Dense(NUM_CATS, activation='softmax' )]
+
+[model1.add(l) for l in layers]
+
+model1.compile(loss=keras.losses.categorical_crossentropy,
+		optimizer=keras.optimizers.SGD(lr=0.01),
+		metrics=['accuracy'])
+
+history1 = model1.fit(X_train, y_ohk_train,
+          	batch_size=256,
+	        epochs=250,
+        	verbose=1,
+	        validation_data=(X_valid, y_ohk_valid),)
+
+f = open('/data2/adyotagupta/school/history1.pkl','wb')
+pickle.dump(history1.history, f)
+f.close()
+
+print('Test Accuracy = {}'.format(model1.evaluate(X_test, y_ohk_test)))
+
+print('Saving model...\n')
+model1.save('/data2/adyotagupta/school/model1.mod')
+
+
+#Epoch 250/250
+#139/139 [==============================] - 8s 54ms/step - loss: 0.0432 - accuracy: 0.9951 - val_loss: 0.2115 - val_accuracy: 0.9354
+
+
+# Model 2
+print('Model 2 ...\n')
+model2 = Sequential()
+layers = [Conv2D(16, 32, activation='sigmoid', input_shape=(100,100,3) ),
+	  Conv2D(8, 16, activation='sigmoid' ),
+	  Conv2D(4, 8, activation='sigmoid' ),
+	  Flatten(),
+	  Dense(1000, activation='sigmoid'),
+	  Dropout(0.1),
+	  Dense(NUM_CATS, activation='softmax' )]
+
+[model2.add(l) for l in layers]
+
+model2.compile(loss=keras.losses.categorical_crossentropy,
+		optimizer=keras.optimizers.SGD(lr=0.01),
+		metrics=['accuracy'])
+
+history2 = model2.fit(X_train, y_ohk_train,
+          	batch_size=256,
+	        epochs=250,
+        	verbose=1,
+	        validation_data=(X_valid, y_ohk_valid),)
+
+
+f = open('/data2/adyotagupta/school/history2.pkl','wb')
+pickle.dump(history2.history, f)
+f.close()
+
+
+print('Test Accuracy = {}'.format(model2.evaluate(X_test, y_ohk_test)))
+print('Saving model...\n')
+model2.save('/data2/adyotagupta/school/model2.mod')
+
+
+
+
+
