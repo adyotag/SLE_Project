@@ -1,5 +1,6 @@
 from skimage import io
 from skimage.transform import resize
+from matplotlib import pyplot as plt
 import numpy as np	
 import glob, os, re
 from tqdm import tqdm
@@ -176,8 +177,25 @@ def LogisticRegressionEval(X, y, model):
 	return correct/SAMPLES
 
 
+def PlotANN(h, i):
+	print('Saving figures for Model {}...'.format(i))
+	plt.figure()
+	plt.plot(h['accuracy'], label='train')
+	plt.plot(h['val_accuracy'], label='validation')
+	plt.title('Accuracy Plot for Model {}'.format(i))
+	plt.ylabel('Accuracy')
+	plt.xlabel('Epochs')
+	plt.legend()
+	plt.savefig('model{}_acc.png'.format(i))
 
-
+	plt.figure()
+	plt.plot(h['loss'], label='train')
+	plt.plot(h['val_loss'], label='validation')
+	plt.title('Loss Plot for Model {}'.format(i))
+	plt.ylabel('Loss')
+	plt.xlabel('Epochs')
+	plt.legend()
+	plt.savefig('model{}_loss.png'.format(i))
 
 
 
