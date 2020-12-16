@@ -147,6 +147,7 @@ history1 = model1.fit(X_train, y_ohk_train,
         	verbose=1,
 	        validation_data=(X_valid, y_ohk_valid),)
 
+
 PlotANN(history1.history, 1)
 
 f = open('/data2/adyotagupta/school/history1.pkl','wb')
@@ -158,7 +159,7 @@ print('Test Accuracy = {}'.format(model1.evaluate(X_test, y_ohk_test)))
 print('Saving model...\n')
 model1.save('/data2/adyotagupta/school/model1.mod')
 
-#Saving figures for Model 1...
+
 #Epoch 150/150
 #139/139 [==============================] - 8s 57ms/step - loss: 0.1472 - accuracy: 0.9604 - val_loss: 0.3086 - val_accuracy: 0.9005
 #139/139 [==============================] - 1s 7ms/step - loss: 0.2904 - accuracy: 0.9048
@@ -173,8 +174,8 @@ layers = [Conv2D(16, 32, activation='sigmoid', input_shape=(100,100,3) ),
 	  Conv2D(8, 16, activation='sigmoid' ),
 	  Conv2D(4, 8, activation='sigmoid' ),
 	  Flatten(),
+	  Dropout(0.05),
 	  Dense(1000, activation='sigmoid'),
-	  Dropout(0.1),
 	  Dense(NUM_CATS, activation='softmax' )]
 
 [model2.add(l) for l in layers]
@@ -202,11 +203,43 @@ print('Saving model...\n')
 model2.save('/data2/adyotagupta/school/model2.mod')
 
 
-#Saving figures for Model 2...
-#Epoch 150/150
-#139/139 [==============================] - 8s 56ms/step - loss: 0.5186 - accuracy: 0.8279 - val_loss: 0.7289 - val_accuracy: 0.7447
-#139/139 [==============================] - 1s 4ms/step - loss: 0.7128 - accuracy: 0.7465
-#Test Accuracy = [0.7128385305404663, 0.7464535236358643]
 
 
 
+# Model 3
+print('Model 3 ...\n')
+model3 = Sequential()
+layers = [Conv2D(16, 32, activation='sigmoid', input_shape=(100,100,3) ),
+	  Conv2D(8, 16, activation='sigmoid' ),
+	  Conv2D(4, 8, activation='sigmoid' ),
+	  Flatten(),
+	  Dropout(0.1),
+	  Dense(1000, activation='sigmoid'),
+	  Dense(NUM_CATS, activation='softmax' )]
+
+[model3.add(l) for l in layers]
+
+model3.compile(loss=keras.losses.categorical_crossentropy,
+		optimizer=keras.optimizers.SGD(lr=0.01),
+		metrics=['accuracy'])
+
+history3 = model3.fit(X_train, y_ohk_train,
+          	batch_size=256,
+	        epochs=150,
+        	verbose=1,
+	        validation_data=(X_valid, y_ohk_valid),)
+
+
+PlotANN(history3.history, 3)
+
+f = open('/data2/adyotagupta/school/history3.pkl','wb')
+pickle.dump(history3.history, f)
+f.close()
+
+
+print('Test Accuracy = {}'.format(model3.evaluate(X_test, y_ohk_test)))
+print('Saving model...\n')
+model3.save('/data2/adyotagupta/school/model3.mod')
+
+
+#Saving figures for Model 3...
