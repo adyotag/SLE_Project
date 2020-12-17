@@ -22,3 +22,9 @@ One word of warning: I used a Quadro RTX 8000 to run my code, which uses 48 GB o
 
 
 ## Part 2 -- Reinforcement Learning
+Code for the reinforcement Learning part is available as two jupyter notebooks:
+
+Project_P2_DP.ipynb contains the code that performs dynamic programming. This can likely be run as is because it only requires numpy and matplotlib. I have imported gym as well into this notebook but it is not required. The code should therefore be able to run as is. 
+
+Project_P2_QL.ipynb contains the code that performs Q-learning. This requires the installing and importing of openai gym. To do this, if one is using anaconda navigator, first a channel that contains the gym package needs to be added. This can be done clikcing on the channels button on the Navigator home screen. Then the following URL is to be added : https://conda.anaconda.org/conda-forge. Next the "gym" package can be searched for in the "Environments" section of the Navigator window and installed. Once done gym can be imported. Alternatively one can just import the enivronment file "QL_environment.yml" in the Project2 folder. 
+NOTE : As I am running 20000 episodes of gym the code takes a little while to run. This can be reduced to 2000 to save on time.
