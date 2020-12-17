@@ -6,11 +6,13 @@ import glob, os, re
 from tqdm import tqdm
 import torch as tc
 
-
+# pytorch devices
 GPU = "cuda:0" 
 CPU = "cpu"
 
-def ExploreDataset(savebackup = False):
+# explore datasets
+# make sure to have the dataset in the same directory as the python program
+def ExploreDataset(SAVE_PATH):
 	# load data
 	paths = []
 	labels = []
@@ -43,7 +45,7 @@ def ExploreDataset(savebackup = False):
 						paths.append(g)
 						labels.append( fruit )
 
-			else:
+			else:	# add path for other fruits directly
 				paths.append(p)
 				labels.append(fruit)
 
@@ -57,7 +59,6 @@ def ExploreDataset(savebackup = False):
 
 
 	# Load images
-	BACKUP = '/data2/adyotagupta/school/'
 	RESIZE = (100,100,3)
 	images = np.zeros((len(paths), np.prod(RESIZE)))
 	print('Importing images...')
@@ -67,16 +68,16 @@ def ExploreDataset(savebackup = False):
 		images[i] = img.flatten()
 
 
-	if savebackup:
-		print('Saving Backup...')
-		np.save(BACKUP+'X_30000.npy', images)
-		np.save(BACKUP+'Y_ohk.npy', onehotkey)
-		np.save(BACKUP+'Y_cat.npy', categorical)
+	# save dataset
+	print('Saving Backup...')
+	np.save(SAVE_PATH+'X_30000.npy', images)
+	np.save(SAVE_PATH+'Y_ohk.npy', onehotkey)
+	np.save(SAVE_PATH+'Y_cat.npy', categorical)
 
 	return [paths, onehotkey, categorical, FRUIT_SET, labels]
 
 
-
+# create input for nth degree polynomial regression by adding features [X, X^2, X^3, ..., X^n]
 def poly(X, degree=1):
 	returned_value = tc.zeros(X.shape[0], X.shape[1]*degree).float().to(CPU)
 	for d in tc.arange(degree):
@@ -85,60 +86,68 @@ def poly(X, degree=1):
 	return returned_value
 
 
+# Perform linear/polynomial regression
 def LinearRegressionFit(X, y, epochs=1000):
+	# transfer dataset fully to the GPU
 	X_GPU, y_GPU = X.to(GPU), y.to(GPU)
 	INPUT, OUTPUT = X.shape[1], len(y[0])
  
+	# transfer model to GPU, use Linear
 	model = tc.nn.Linear(INPUT, OUTPUT).to(GPU)
-	loss_func = tc.nn.MSELoss()
-	opt = tc.optim.SGD(model.parameters(), lr=0.001)	
+	loss_func = tc.nn.MSELoss()  #use means square loss
+	opt = tc.optim.SGD(model.parameters(), lr=0.001) # use stochastic gradient descent for optimization	
 
-	loss_counter = []
+	loss_counter = [] # track loss
 
-
-	pbar_epoch = tqdm(range(epochs))
+	pbar_epoch = tqdm(range(epochs)) # create progress bar
 	for epoch in pbar_epoch:
-		y_hat = model(X_GPU.requires_grad_())
-		loss = loss_func(y_hat, y_GPU)
-		loss.backward()
-		opt.step()
-		opt.zero_grad()
-		loss_counter.append(loss.item())
-		pbar_epoch.set_description( "Loss: {}".format(loss.item()) )
+		y_hat = model(X_GPU.requires_grad_())  # get output
+		loss = loss_func(y_hat, y_GPU) # compute loss
+		loss.backward() # compute gradients
+		opt.step() # update params
+		opt.zero_grad() #reset gradients for next step
+		loss_counter.append(loss.item()) #store loss
+		pbar_epoch.set_description( "Loss: {}".format(loss.item()) ) # progress bar for easy referral
 
-	returned_value = [model.to(CPU), loss_counter]
-	tc.cuda.empty_cache()
+	returned_value = [model.to(CPU), loss_counter] # return trained model and loss history
+	tc.cuda.empty_cache() # clear graphics memory
 	return returned_value
 
 
+# Perform linear/polynomial evaluation
 def LinearRegressionEval(X, y, model):
+	# transfer dataset fully to the GPU
 	model_GPU, X_GPU, y_GPU = model.to(GPU), X.to(GPU), y.to(GPU)
-	SAMPLES, OUTPUT = len(y), len(y[0])
-	y_hat = model_GPU(X_GPU)
+	SAMPLES, OUTPUT = len(y), len(y[0]) # number of samples and number of outputs (15)
+	y_hat = model_GPU(X_GPU) # get outputs from trained model
 
+	# we still need to obtain the correct category based on y_hat
 	g_hat = tc.zeros(SAMPLES, OUTPUT).byte().to(GPU)
 	for i in range(SAMPLES):
-		g_hat[i,tc.argmax(y_hat[i])] = 1
+		# choose category based on the maximum y value obtained; this is valid since 
+		# we are using one-hot key encoding
+		g_hat[i,tc.argmax(y_hat[i])] = 1 
 
+	# obtain the number of correct predictions
 	correct = 0
 	for i in range(SAMPLES):
 		if (g_hat[i] == y_GPU[i].byte()).all():
 			correct += 1.
 
-	tc.cuda.empty_cache()
-	return correct/SAMPLES
+	tc.cuda.empty_cache()  # clear graphics memory
+	return correct/SAMPLES # return accuracy
 
 
-
+# Perform Logistic Regression
 def LogisticRegressionFit(X, y, NUM_CATS, epochs=1000 ):
 	X_GPU, y_GPU = X.to(GPU), y.to(GPU)
 	INPUT, OUTPUT = X.shape[1], NUM_CATS
  
-	layers = [tc.nn.Linear(INPUT, OUTPUT), tc.nn.Softmax()]
+	layers = [tc.nn.Linear(INPUT, OUTPUT), tc.nn.Softmax()] # use of softmax layer since multiple categories
 	model = tc.nn.Sequential(*layers).to(GPU)
 
 
-	loss_func = tc.nn.CrossEntropyLoss()
+	loss_func = tc.nn.CrossEntropyLoss()  # use of cross-entropy loss 
 	opt = tc.optim.SGD(model.parameters(), lr=.1)	
 
 	loss_counter = []
@@ -158,6 +167,7 @@ def LogisticRegressionFit(X, y, NUM_CATS, epochs=1000 ):
 	return returned_value
 
 
+# Perform logistic evaluation
 def LogisticRegressionEval(X, y, model):
 	model_GPU, X_GPU, y_GPU = model.to(GPU), X.to(GPU), y.to(GPU)
 	SAMPLES = len(y)
@@ -166,7 +176,6 @@ def LogisticRegressionEval(X, y, model):
 	g_hat = tc.zeros(SAMPLES).byte().to(GPU)
 	for i in range(SAMPLES):
 		g_hat[i] = tc.argmax(y_hat[i])
-
 
 	correct = 0
 	for i in range(SAMPLES):
@@ -177,6 +186,7 @@ def LogisticRegressionEval(X, y, model):
 	return correct/SAMPLES
 
 
+# make accuracy and loss plots for ANN models
 def PlotANN(h, i):
 	print('Saving figures for Model {}...'.format(i))
 	plt.figure()
@@ -196,16 +206,6 @@ def PlotANN(h, i):
 	plt.xlabel('Epochs')
 	plt.legend()
 	plt.savefig('model{}_loss.png'.format(i))
-
-
-
-
-
-
-
-
-
-
 
 
 
