@@ -28,3 +28,12 @@ Project_P2_DP.ipynb contains the code that performs dynamic programming. This ca
 
 Project_P2_QL.ipynb contains the code that performs Q-learning. This requires the installing and importing of openai gym. To do this, if one is using anaconda navigator, first a channel that contains the gym package needs to be added. This can be done clikcing on the channels button on the Navigator home screen. Then the following URL is to be added : https://conda.anaconda.org/conda-forge. Next the "gym" package can be searched for in the "Environments" section of the Navigator window and installed. Once done gym can be imported. Alternatively one can just import the enivronment file "QL_environment.yml" in the Project2 folder. 
 NOTE : As I am running 20000 episodes of gym the code takes a little while to run. This can be reduced to 2000 to save on time.
+
+
+
+## Sources
+- Dataset: https://www.kaggle.com/chrisfilo/fruit-recognition/
+- Pytorch Neural Network Tutorial: https://pytorch.org/tutorials/beginner/blitz/neural_networks_tutorial.html
+- Keras: https://keras.io/
+- OpenAI Gym: https://gym.openai.com/
+- A. G. Barto, R. S. Sutton, and C. W. Anderson. Neuronlike adaptive elements that can solve difficult learning control problems. IEEE Transactions on Systems, Man, and Cybernetics, SMC-13(5):834–846, 1983.
