@@ -5,7 +5,7 @@ This is our submission for the Final Project. Adyota worked on Part 1, and Adith
 
 
 ## Part 1 -- Machine Learning
-Data, alongside model is available at https://mega.nz/folder/NtBgXLyZ#-97kmN4b4AjvZFf5092M-g
+Data, processed data, and trained model parameters are available at https://mega.nz/folder/NtBgXLyZ#-97kmN4b4AjvZFf5092M-g
 
 To run the first project, please download the fruit_dataset.zip file and unzip the file. Place the folder in the same directory as the python code. Furthermore, change the SAVE_PATH accordingly. For the models that I obtained when running, they can be downloaded and loaded using model.load. Also the X and y after data processing have been saved as numpy objects and can be loaded as well. The history variables for the four ANN models are pickle objects and can be trivially loaded. The ouputs from the training and evaluating of each model is located in the output.txt file. Finally, the conda environment yml file is attached, so it can be run in the same environment I used.
 
