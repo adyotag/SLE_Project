@@ -35,5 +35,6 @@ NOTE : As I am running 20000 episodes of gym the code takes a little while to ru
 - Dataset: https://www.kaggle.com/chrisfilo/fruit-recognition/
 - Pytorch Neural Network Tutorial: https://pytorch.org/tutorials/beginner/blitz/neural_networks_tutorial.html
 - Keras: https://keras.io/
+- Draw Neural Networks: http://alexlenail.me/NN-SVG/LeNet.html
 - OpenAI Gym: https://gym.openai.com/
 - A. G. Barto, R. S. Sutton, and C. W. Anderson. Neuronlike adaptive elements that can solve difficult learning control problems. IEEE Transactions on Systems, Man, and Cybernetics, SMC-13(5):834–846, 1983.
