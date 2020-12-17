@@ -134,7 +134,7 @@ def LogisticRegressionFit(X, y, NUM_CATS, epochs=1000 ):
 	X_GPU, y_GPU = X.to(GPU), y.to(GPU)
 	INPUT, OUTPUT = X.shape[1], NUM_CATS
  
-	layers = [tc.nn.Linear(INPUT, OUTPUT), tc.nn.Sigmoid()]
+	layers = [tc.nn.Linear(INPUT, OUTPUT), tc.nn.Softmax()]
 	model = tc.nn.Sequential(*layers).to(GPU)
 
 
