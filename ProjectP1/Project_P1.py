@@ -59,10 +59,9 @@ X_trains = [X_train, X2_train, X3_train]
 X_valids = [X_valid, X2_valid, X3_valid]
 X_tests = [X_test, X2_test, X3_test]
 
-
 """
-## Linear Regression
-print('Training Linear Regression models...\n')
+## Polynomial Regression
+print('Training Polynomial Regression models...\n')
 plt.figure()
 
 for i in range(3):
@@ -77,12 +76,12 @@ for i in range(3):
 
 	tc.cuda.empty_cache()
 
-plt.title("Loss of Linear Regression Models over Epochs")
+plt.title("Loss of Polynomial Regression Models over Epochs")
 plt.xlabel("Epochs")
 plt.ylabel("MSE Loss")
 plt.legend()
-plt.savefig("LRLoss.png")
-
+plt.savefig("PRLoss.png")
+"""
 
 ## Logistic Regression
 print('\n\nTraining Logistic Regression models...\n')
@@ -106,8 +105,8 @@ plt.xlabel("Epochs")
 plt.ylabel("Cross Entropy Loss")
 plt.legend()
 plt.savefig("LogRLoss.png")
-"""
 
+sys.exit()
 
 ## Artificial Neural Network
 
@@ -203,6 +202,11 @@ model2.save('/data2/adyotagupta/school/model2.mod')
 
 
 
+#Epoch 150/150
+#139/139 [==============================] - 7s 48ms/step - loss: 0.5137 - accuracy: 0.8306 - val_loss: 0.4779 - val_accuracy: 0.8460
+#Saving figures for Model 2...
+#139/139 [==============================] - 1s 4ms/step - loss: 0.5070 - accuracy: 0.8365
+
 
 
 # Model 3
@@ -241,4 +245,52 @@ print('Saving model...\n')
 model3.save('/data2/adyotagupta/school/model3.mod')
 
 
-#Saving figures for Model 3...
+#Epoch 150/150
+#139/139 [==============================] - 7s 47ms/step - loss: 0.5274 - accuracy: 0.8245 - val_loss: 0.4954 - val_accuracy: 0.8300
+#139/139 [==============================] - 1s 4ms/step - loss: 0.4940 - accuracy: 0.8426
+
+
+
+
+# Model 4
+print('Model 4 ...\n')
+model4 = Sequential()
+layers = [Conv2D(16, 32, activation='sigmoid', input_shape=(100,100,3) ),
+	  Conv2D(8, 16, activation='sigmoid' ),
+	  Conv2D(4, 8, activation='sigmoid' ),
+	  Flatten(),
+	  Dropout(0.025),
+	  Dense(1000, activation='sigmoid'),
+	  Dense(NUM_CATS, activation='softmax' )]
+
+[model4.add(l) for l in layers]
+
+model4.compile(loss=keras.losses.categorical_crossentropy,
+		optimizer=keras.optimizers.SGD(lr=0.01),
+		metrics=['accuracy'])
+
+history4 = model4.fit(X_train, y_ohk_train,
+          	batch_size=256,
+	        epochs=150,
+        	verbose=1,
+	        validation_data=(X_valid, y_ohk_valid),)
+
+
+PlotANN(history4.history, 4)
+
+f = open('/data2/adyotagupta/school/history4.pkl','wb')
+pickle.dump(history4.history, f)
+f.close()
+
+
+print('Test Accuracy = {}'.format(model4.evaluate(X_test, y_ohk_test)))
+print('Saving model...\n')
+model4.save('/data2/adyotagupta/school/model4.mod')
+
+
+
+
+
+
+
+#
